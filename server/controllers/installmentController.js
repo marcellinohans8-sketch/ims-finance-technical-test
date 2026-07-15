@@ -40,9 +40,25 @@ class InstallmentController {
   }
 
   static async getTotalOverdue(req, res) {
-    res.json({
-      message: "Not implemented",
-    });
+    try {
+      const [result] = await sequelize.query(`
+      SELECT
+        c."contractNo" AS "contractNo",
+        c."clientName" AS "clientName",
+        SUM(i."monthlyInstallment") AS "totalOverdue"
+      FROM "Contracts" c
+      JOIN "InstallmentSchedules" i
+        ON c."contractNo" = i."contractNo"
+      WHERE i."dueDate" <= '2024-08-14'
+      GROUP BY c."contractNo", c."clientName";
+    `);
+
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({
+        message: error.message,
+      });
+    }
   }
 
   static async getPenalty(req, res) {
