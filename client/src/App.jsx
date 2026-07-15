@@ -1,122 +1,174 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import "./App.css";
+import { useState } from "react";
+import api from "./services/api";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [form, setForm] = useState({
+    contractNo: "",
+    clientName: "",
+    otr: "",
+    dpPercent: "",
+    tenor: "",
+  });
+
+  const [result, setResult] = useState(null);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const { data } = await api.post("/installments/calculate", {
+        ...form,
+        otr: Number(form.otr),
+        dpPercent: Number(form.dpPercent),
+        tenor: Number(form.tenor),
+      });
+
+      setResult(data);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to calculate installment");
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="container">
+      <div className="card">
+        <h1>IMS Finance Calculator</h1>
 
-      <div className="ticks"></div>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Contract No</label>
+            <input
+              type="text"
+              name="contractNo"
+              value={form.contractNo}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <div className="form-group">
+            <label>Client Name</label>
+            <input
+              type="text"
+              name="clientName"
+              value={form.clientName}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          <div className="form-group">
+            <label>OTR</label>
+            <input
+              type="number"
+              name="otr"
+              value={form.otr}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>DP (%)</label>
+            <input
+              type="number"
+              name="dpPercent"
+              value={form.dpPercent}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Tenor (Month)</label>
+            <input
+              type="number"
+              name="tenor"
+              value={form.tenor}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <button type="submit">Calculate</button>
+        </form>
+
+        {result && (
+          <div className="result">
+            <h2>Calculation Result</h2>
+
+            <div className="info">
+              <p>
+                <strong>Contract No :</strong> {result.contractNo}
+              </p>
+
+              <p>
+                <strong>Client Name :</strong> {result.clientName}
+              </p>
+
+              <p>
+                <strong>OTR :</strong> Rp{" "}
+                {Number(result.otr).toLocaleString("id-ID")}
+              </p>
+
+              <p>
+                <strong>Down Payment :</strong> Rp{" "}
+                {Number(result.downPayment).toLocaleString("id-ID")}
+              </p>
+
+              <p>
+                <strong>Loan Amount :</strong> Rp{" "}
+                {Number(result.loanAmount).toLocaleString("id-ID")}
+              </p>
+
+              <p>
+                <strong>Monthly Installment :</strong> Rp{" "}
+                {Number(result.monthlyInstallment).toLocaleString("id-ID", {
+                  maximumFractionDigits: 0,
+                })}
+              </p>
+            </div>
+
+            <h2>Installment Schedule</h2>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Installment No</th>
+                  <th>Due Date</th>
+                  <th>Monthly Installment</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {result.schedule.map((item) => (
+                  <tr key={item.installmentNo}>
+                    <td>{item.installmentNo}</td>
+                    <td>{item.dueDate}</td>
+                    <td>
+                      Rp{" "}
+                      {Number(item.monthlyInstallment).toLocaleString("id-ID", {
+                        maximumFractionDigits: 0,
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
