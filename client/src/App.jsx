@@ -131,6 +131,11 @@ function App() {
               </p>
 
               <p>
+                <strong>Interest Rate :</strong>{" "}
+                {(result.interestRate * 100).toFixed(1)}%
+              </p>
+
+              <p>
                 <strong>Monthly Installment :</strong> Rp{" "}
                 {Number(result.monthlyInstallment).toLocaleString("id-ID", {
                   maximumFractionDigits: 0,
