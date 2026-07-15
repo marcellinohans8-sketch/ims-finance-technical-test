@@ -5,12 +5,32 @@ class InstallmentController {
     try {
       const { contractNo, clientName, otr, dpPercent, tenor } = req.body;
 
+      // Menghitung Down Payment dan Pokok Utang
       const downPayment = (otr * dpPercent) / 100;
       const loanAmount = otr - downPayment;
-      const monthlyInstallment = loanAmount / tenor;
 
+      // Menentukan suku bunga berdasarkan jangka waktu kredit
+      let interestRate;
+      if (tenor <= 12) {
+        interestRate = 0.12;
+      } else if (tenor <= 24) {
+        interestRate = 0.14;
+      } else {
+        interestRate = 0.165;
+      }
+
+      // Mengubah tenor dari bulan menjadi tahun
+      // agar perhitungan bunga sesuai dengan contoh jadwal angsuran pada soal
+      const tenorInYears = tenor / 12;
+
+      // Menghitung total bunga selama masa kredit
+      const totalInterest = loanAmount * interestRate * tenorInYears;
+
+      // Menghitung angsuran per bulan
+      const monthlyInstallment = (loanAmount + totalInterest) / tenor;
+
+      // Membuat jadwal angsuran
       const schedule = [];
-
       let dueDate = new Date("2024-01-25");
 
       for (let i = 1; i <= tenor; i++) {
@@ -29,6 +49,7 @@ class InstallmentController {
         otr,
         downPayment,
         loanAmount,
+        interestRate,
         monthlyInstallment,
         schedule,
       });
