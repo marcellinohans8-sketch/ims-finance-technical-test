@@ -62,9 +62,32 @@ class InstallmentController {
   }
 
   static async getPenalty(req, res) {
-    res.json({
-      message: "Not implemented",
-    });
+    try {
+      const [result] = await sequelize.query(`
+      SELECT
+        c."contractNo" AS "contractNo",
+        c."clientName" AS "clientName",
+        i."installmentNo" AS "installmentNo",
+        (DATE '2024-08-14' - i."dueDate") AS "lateDays",
+        ROUND(
+          i."monthlyInstallment" * 0.001 * (DATE '2024-08-14' - i."dueDate"),
+          2
+        ) AS "totalPenalty"
+      FROM "Contracts" c
+      JOIN "InstallmentSchedules" i
+        ON c."contractNo" = i."contractNo"
+      WHERE
+        i."installmentNo" > 5
+        AND i."dueDate" < DATE '2024-08-14'
+      ORDER BY i."installmentNo";
+    `);
+
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({
+        message: error.message,
+      });
+    }
   }
 }
 
